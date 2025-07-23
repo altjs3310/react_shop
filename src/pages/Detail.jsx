@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom"
 import TabContent from "../components/TabContent";
 import { useDispatch } from "react-redux";
 import { addItem } from "../redux/cartSlice";
+import { setWatched } from "../redux/watchedSlice";
+import { setPageTitle } from "../util/setTitle";
 
 function Detail({fruit}) {
   const { id } = useParams();
@@ -33,8 +35,28 @@ function Detail({fruit}) {
   // 의존성 배열이 빈배열이면 마운트 시 한번만 실행이 됨
   // 의존성 배열이 특정 state, props가 있으면 마운트될때와 해당 state, props가 업데이트될때 실행이됨 
   useEffect(() => {
-    console.log('useEffect 확인용 콘솔')
   }, [num])
+
+  useEffect(() => {
+    // 방금 들어온 상품의 id를 로컬스토리지에 추가
+    let watched = localStorage.getItem('watched');
+    watched = JSON.parse(watched);
+
+    // includes : 해당 배열에 값이 있으면 true, 없으면 false
+    if(watched.length === 3 && !watched.includes(id)) 
+      watched.pop();
+    watched = [id, ...watched]
+
+    watched = new Set(watched);
+    // set은 배열이 아니기때문에 중복 제거 후 다시 배열로 변환
+    watched = Array.from(watched);
+    localStorage.setItem('watched', JSON.stringify(watched));
+    dispatch( setWatched(watched) )
+  }, [])
+
+  useEffect(() => {
+    setPageTitle(`${id}번 상품`);
+  })
 
 
   if(!selectedFruit){
